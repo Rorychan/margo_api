@@ -1,0 +1,22 @@
+version: "3.1"
+services:
+  api:
+    build: .
+    environment:
+      DB_HOST: db
+      DB_USERNAME: margarita
+      DB_PASSWORD: margarita
+    ports:
+      - 5001:5000
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: margarita
+      POSTGRES_DB: margarita
+    ports:
+      - 5432:5432
+
