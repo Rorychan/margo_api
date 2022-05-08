@@ -1,13 +1,27 @@
 from flask import Flask, request, jsonify, make_response
 import uuid
-
+users = {}
 orders = {}
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return 'Hello World'
-
+@app.route("/api/v1/register",methods = ["POST"])
+def register():
+    global users
+    if request.method == "POST":
+        user_info = request.get_json()
+        if user_info["nickname"] in users:
+            resp = make_response(jsonify({"error": "user already exists"}),400)
+            return resp
+        else:
+            users[user_info["nickname"]] = {
+                "name": user_info["name"],
+                "pass": user_info["pass"],
+                "orders": []
+            }
+            resp = make_response
 @app.route("/api/v1/orders", methods = ["POST"])
 def orders_processor():
     global orders
