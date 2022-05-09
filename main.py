@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify, make_response
 import uuid
 import hashlib
+import catalog
+import filters
 users = {}
 orders = {}
+
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -82,6 +86,14 @@ def get_orders():
 @app.route("/api/v1/users", methods = ["GET"])
 def get_users():
     resp = make_response(users, 200)
+    return resp
+@app.route("/api/v1/catalog", methods = ["GET"])
+def get_catalog():
+    resp = make_response(jsonify(catalog.get_cat()),200)
+    return resp
+@app.route("/api/v1/filters", methods = ["GET"])
+def get_filters():
+    resp = make_response(jsonify(filters.get_filt()),200)
     return resp
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5001, debug = True)
