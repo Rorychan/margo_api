@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.8.9
 COPY . .
 RUN pip install -r requirements.txt
-ENTRYPOINT ["python","main.py"]
+ENTRYPOINT ["uvicorn","--host","0.0.0.0","sql_app.main:app"]
