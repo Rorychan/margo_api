@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -10,6 +10,10 @@ class Brand(Base):
     name = Column(String, unique=True)
 
 
+category_product_type = Table("category_product_type", Base.metadata,
+    Column("product_type_id", Integer, ForeignKey("product_types.id")),
+    Column("category_id", Integer, ForeignKey("categories.id"))
+)
 
 class Category(Base):
     __tablename__ = "categories"
@@ -18,11 +22,13 @@ class Category(Base):
     name = Column(String, unique=True)
 
 
+
 class ProductType(Base):
     __tablename__ = "product_types"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, unique=True)
+    categories = relationship("Category", secondary=category_product_type, backref="products")
 #
 # class Order(Base):
 #     __tablename__ = "orders"
@@ -65,11 +71,12 @@ class Product(Base):
 
 
 
-# class User(Base):
-#     __tablename__ = "users"
-#
-#     id = Column(Integer, primary_key=True, index=True)
-#     username = Column(String, unique=True)
-#     name = Column(String)
-#     hashed_password = Column(String)
-#     orders = relationship("Order")
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True)
+    name = Column(String)
+    address = Column(String)
+    hashed_password = Column(String)
+

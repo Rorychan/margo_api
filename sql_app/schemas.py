@@ -3,6 +3,45 @@ from typing import List, Union, Optional
 from pydantic import BaseModel
 
 
+#Token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Union[str, None] = None
+
+
+# User
+class UserBase(BaseModel):
+    username: str
+    name: str
+    address: Optional[str] = ""
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+
+
+
+class UserInDB(UserBase):
+    id: int
+    hashed_password: str
+
+    class Config:
+        orm_mode = True
+
+
+class User(UserBase):
+    id: int
+
+
+
+
+
 # Product
 class ProductBase(BaseModel):
     name: str
@@ -41,22 +80,7 @@ class Product(ProductBase):
 #         orm_mode = True
 
 
-# # User
-# class UserBase(BaseModel):
-#     username: str
-#     name: str
-#
-#
-# class UserCreate(UserBase):
-#     password: str
-#
-#
-# class User(UserBase):
-#     id: int
-#     orders: List[Order]
-#
-#     class Config:
-#         orm_mode = True
+
 
 
 # Brand
@@ -101,7 +125,7 @@ class ProductTypeCreate(ProductTypeBase):
 
 class ProductType(ProductTypeBase):
     id: int
-
+    categories: List[Category]
     class Config:
         orm_mode = True
 

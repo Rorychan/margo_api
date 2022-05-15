@@ -1,5 +1,44 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
+from . import models, schemas, auth
+from typing import List, Union
+from datetime import datetime,timedelta
+from jose import jwt, JWTError
+
+
+
+# User
+def get_user(db: Session, username: str):
+    db_user = db.query(models.User).filter(models.User.username == username).first()
+    if db_user:
+        return db_user
+
+
+def register_user(db: Session, user: schemas.UserCreate):
+    hashed_password = auth.get_password_hash(user.password)
+    db_user = models.User(name=user.name, username=user.username, address=user.address, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return schemas.User(name=db_user.name, username=db_user.username,address=db_user.address,id=db_user.id)
+
+
+
+def authenticate_user(db: Session, username: str, password: str):
+    user = get_user(db=db, username=username)
+    if not user:
+        return False
+    if not auth.verify_password(password, user.hashed_password):
+        return False
+    return user
+
+# JWT
+
+
+SECRET_KEY = "43d040a66b3ca9bd85234d624a0786603712ce406f51e14a646b71b01c80de8a"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
 
 #Brand
 def get_brands(db: Session):
@@ -49,6 +88,20 @@ def create_product_type(db: Session, product_type: schemas.ProductTypeCreate):
     db.refresh(db_product_type)
     return db_product_type
 
+
+def add_category_to_product_type(db: Session, product_type_name: str, categories: List[schemas.CategoryCreate]):
+    db_product_type = db.query(models.ProductType).filter(models.ProductType.name == product_type_name).first()
+    for category in categories:
+        db_category = db.query(models.Category).filter(models.Category.name == category.name).first()
+        if db_category:
+            db_product_type.categories.append(db_category)
+        else:
+            db_category = create_category(db=db, category=category)
+            db_product_type.categories.append(db_category)
+        db.commit()
+        db.refresh(db_product_type)
+    return db_product_type
+
 #Products
 def get_products(db: Session):
     return db.query(models.Product).all()
@@ -57,8 +110,22 @@ def get_product_by_id(db: Session, product_id: int):
     return db.query(models.Product).filter(models.Product.id == product_id).first()
 
 def create_product(db: Session, product: schemas.ProductCreate):
+    db_product_type = db.query(models.ProductType).filter(models.ProductType.name == product.product_type_name).first()
+    if db_product_type is None:
+        db_product_type = create_product_type(db=db, product_type=schemas.ProductTypeCreate(name=product.product_type_name))
+    add_category_to_product_type(
+        db=db,
+        product_type_name=db_product_type.name,
+        categories=[schemas.CategoryCreate(name=product.category_name)]
+    )
+    db_brand = db.query(models.Brand).filter(models.Brand.name == product.brand_name).first()
+    if db_brand is None:
+        create_brand(db=db, brand=schemas.BrandCreate(name=product.brand_name))
     db_product = models.Product(**product.dict())
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
     return db_product
+
+
+
