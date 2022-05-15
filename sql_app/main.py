@@ -1,4 +1,4 @@
-from typing import List,Union
+from typing import List, Union, Optional
 from datetime import datetime,timedelta
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
@@ -60,7 +60,7 @@ def get_current_user(token: str = Depends(oath2scheme), db: Session = Depends(ge
     user = crud.get_user(db=db, username=token_data.username)
     if user is None:
         raise credentials_exception
-    return schemas.User(name=user.name,username=user.username, address=user.address, id=user.id)
+    return schemas.User(name=user.name,username=user.username, address=user.address, id=user.id, orders=user.orders)
 
 
 @app.post("/auth", response_model=schemas.Token, tags=["Auth"])
@@ -90,6 +90,22 @@ def create_user(user: schemas.UserCreate, db:Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="User already exists")
     return crud.register_user(db=db, user=user)
+
+@app.get("/users/me/orders/", response_model=List[schemas.Order], tags=["Users", "Orders"])
+def read_user_orders(current_user: schemas.User = Depends(get_current_user)):
+    return current_user.orders
+
+@app.get("/user/me/orders/{order_id}/", response_model=schemas.Order, tags=["Users", "Orders"])
+def read_user_order(order_id: int, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return crud.get_order(db=db, order_id=order_id)
+
+@app.post("/users/me/orders/", response_model=schemas.Order, tags=["Users", "Orders"])
+def create_user_order(products: schemas.OrderCreate, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    for product_id in products.product_ids:
+        db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+        if db_product is None:
+            raise HTTPException(status_code=400, detail=f"Product {product_id} not found")
+    return crud.create_order(db=db, user_id=current_user.id, product_ids=products.product_ids)
 
 
 
@@ -159,9 +175,17 @@ def write_category_to_product_type(product_type_name: str, categories: List[sche
     return crud.add_category_to_product_type(product_type_name=product_type_name, categories=categories,db=db)
 
 # Products
-@app.get("/products",response_model=schemas.Product, tags=["Products"])
-def read_product(db: Session = Depends(get_db)):
-    return crud.get_products(db=db)
+@app.get("/products",response_model=List[schemas.Product], tags=["Products"])
+def read_product(
+        brand_name: Optional[str] = None,
+        product_type: Optional[str] = None,
+        category: Optional[str] = None,
+        db: Session = Depends(get_db)
+):
+    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type)
+    if not db_products:
+        raise HTTPException(status_code=404, detail="No products found on these criterias")
+    return db_products
 
 
 @app.get("/products/{product_id}/", response_model=schemas.Product, tags=["Products"])
@@ -171,11 +195,11 @@ def read_product_by_id(product_id: int, db: Session = Depends(get_db)):
 
 @app.post(
     "/products",
-    response_model=schemas.Product,
+    response_model=List[schemas.Product],
     tags=["Products"],
     response_description="Возвращает созданный продукт"
 )
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
+def create_product(products: List[schemas.ProductCreate], db: Session = Depends(get_db)):
     '''
     Добавляет продукт
 
@@ -188,9 +212,10 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     - **brand_name**: Имя бренда. Например **Maybeline**
     - **category_name**: Категория товара. Например **Powder**
     '''
-    db_product = db.query(models.Product).filter(models.Product.name == product.name).first()
-    if db_product:
-        raise HTTPException(status_code=400, detail="Product Already Exists")
-    return crud.create_product(db=db, product=product)
+    for product in products:
+        db_product = db.query(models.Product).filter(models.Product.name == product.name).first()
+        if db_product:
+            raise HTTPException(status_code=400, detail="Product Already Exists")
+    return crud.create_product(db=db, products=products)
 
 

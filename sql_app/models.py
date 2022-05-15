@@ -28,15 +28,15 @@ class ProductType(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, unique=True)
-    categories = relationship("Category", secondary=category_product_type, backref="products")
-#
-# class Order(Base):
-#     __tablename__ = "orders"
-#
-#     id = Column(Integer, primary_key=True, index=True)
-#     user_id = Column(Integer, ForeignKey("users.id"))
-#
-#     products = relationship("Association", back_populates="product")
+    categories = relationship("Category", secondary=category_product_type, backref="product_types")
+
+
+order_product = Table(
+    "order_product",
+    Base.metadata,
+    Column("order_id", Integer, ForeignKey("orders.id")),
+    Column("product_id", Integer, ForeignKey("products.id"))
+)
 
 
 class Product(Base):
@@ -53,7 +53,6 @@ class Product(Base):
     product_type = relationship("ProductType")
     brand = relationship("Brand")
     category = relationship("Category")
-    # orders = relationship("Association", back_populates="order")
 
 
 # class Association(Base):
@@ -79,4 +78,16 @@ class User(Base):
     name = Column(String)
     address = Column(String)
     hashed_password = Column(String)
+    orders = relationship("Order")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    owner_id = Column(String, ForeignKey("users.id"))
+    content = Column(String)
+    products = relationship("Product", secondary=order_product, backref="orders")
+
+
 

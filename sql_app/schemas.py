@@ -12,36 +12,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Union[str, None] = None
 
-
-# User
-class UserBase(BaseModel):
-    username: str
-    name: str
-    address: Optional[str] = ""
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-
-
-
-class UserInDB(UserBase):
-    id: int
-    hashed_password: str
-
-    class Config:
-        orm_mode = True
-
-
-class User(UserBase):
-    id: int
-
-
-
-
-
 # Product
 class ProductBase(BaseModel):
     name: str
@@ -63,22 +33,52 @@ class Product(ProductBase):
         orm_mode = True
 
 
-# # Order
-# class OrderBase(BaseModel):
-#     user_id: int
-#
-#
-#
-# class OrderCreate(OrderBase):
-#     pass
-#
-#
-# class Order(OrderBase):
-#     id: int
-#     products: List[Product] = []
-#     class Config:
-#         orm_mode = True
+# Order
+class OrderBase(BaseModel):
+    pass
 
+class OrderCreate(OrderBase):
+    product_ids: List[int]
+
+
+class OrderOut(OrderBase):
+    id: int
+    products: List[Product]
+
+
+class Order(OrderBase):
+    id: int
+    products: List[Product]
+    owner_id: int
+
+    class Config:
+        orm_mode = True
+
+
+
+# User
+class UserBase(BaseModel):
+    username: str
+    name: str
+    address: Optional[str] = ""
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserInDB(UserBase):
+    id: int
+    orders: Optional[List[Order]]=[]
+    hashed_password: str
+
+    class Config:
+        orm_mode = True
+
+
+class User(UserBase):
+    id: int
+    orders: List[Order]
 
 
 

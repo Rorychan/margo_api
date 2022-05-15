@@ -1,0 +1,50 @@
+[
+    {
+    "name": "Product1",
+    "price": "string",
+    "description": "",
+    "product_type_name": "EyeLiner",
+    "brand_name": "Gucci",
+    "category_name": "Pencil"
+  },
+    {
+    "name": "Product2",
+    "price": "string",
+    "description": "",
+    "product_type_name": "EyeLiner",
+    "brand_name": "Versace",
+    "category_name": "Cream"
+  },
+    {
+    "name": "Product3",
+    "price": "string",
+    "description": "",
+    "product_type_name": "Blush",
+    "brand_name": "Versace",
+    "category_name": "Cream"
+  },
+    {
+    "name": "Product4",
+    "price": "string",
+    "description": "",
+    "product_type_name": "EyeBrow",
+    "brand_name": "Maybeline",
+    "category_name": "Palette"
+  },
+    {
+    "name": "Product5",
+    "price": "string",
+    "description": "",
+    "product_type_name": "EyeLiner",
+    "brand_name": "Gucci",
+    "category_name": "Pencil"
+  },
+    {
+    "name": "Product6",
+    "price": "string",
+    "description": "",
+    "product_type_name": "Blush",
+    "brand_name": "Gucci",
+    "category_name": "Powder"
+  }
+]

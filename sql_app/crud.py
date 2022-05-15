@@ -1,10 +1,32 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
+
 from . import models, schemas, auth
-from typing import List, Union
+from typing import List, Union, Optional
 from datetime import datetime,timedelta
 from jose import jwt, JWTError
 
 
+# Order
+def create_order(db: Session, user_id: int, product_ids: List[int]):
+    db_order = models.Order(owner_id=user_id, products=[])
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+    for product_id in product_ids:
+        db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+        db_order.products.append(db_product)
+    db.commit()
+    db.refresh(db_order)
+    return db_order
+
+
+def get_order(db: Session, order_id: int):
+    return db.query(models.Order).filter(models.Order.id == order_id).first()
+
+
+def get_orders(db: Session, user_id: int):
+   return db.query(models.Order).filter(models.Order.owner_id == user_id).all()
 
 # User
 def get_user(db: Session, username: str):
@@ -19,7 +41,7 @@ def register_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return schemas.User(name=db_user.name, username=db_user.username,address=db_user.address,id=db_user.id)
+    return schemas.User(name=db_user.name, username=db_user.username, address=db_user.address, id=db_user.id, orders=[])
 
 
 
@@ -103,29 +125,50 @@ def add_category_to_product_type(db: Session, product_type_name: str, categories
     return db_product_type
 
 #Products
-def get_products(db: Session):
-    return db.query(models.Product).all()
+def get_products(
+        db: Session,
+        product_type: Optional[str] = None,
+        category: Optional[str] = None,
+        brand_name: Optional[str] = None
+        ):
+    print(brand_name)
+    filters = []
+    if product_type is None and category is None and brand_name is None:
+        db_products = db.query(models.Product).all()
+    else:
+        if product_type:
+            filters.append(f"product_type_name='{product_type}'")
+        if category:
+            filters.append(f"category_name='{category}'")
+        if brand_name:
+            filters.append(f"brand_name='{brand_name}'")
+        filters = ' AND '.join(filters)
+        db_products = db.query(models.Product).filter(text(filters)).all()
+    return db_products
 
 def get_product_by_id(db: Session, product_id: int):
     return db.query(models.Product).filter(models.Product.id == product_id).first()
 
-def create_product(db: Session, product: schemas.ProductCreate):
-    db_product_type = db.query(models.ProductType).filter(models.ProductType.name == product.product_type_name).first()
-    if db_product_type is None:
-        db_product_type = create_product_type(db=db, product_type=schemas.ProductTypeCreate(name=product.product_type_name))
-    add_category_to_product_type(
-        db=db,
-        product_type_name=db_product_type.name,
-        categories=[schemas.CategoryCreate(name=product.category_name)]
-    )
-    db_brand = db.query(models.Brand).filter(models.Brand.name == product.brand_name).first()
-    if db_brand is None:
-        create_brand(db=db, brand=schemas.BrandCreate(name=product.brand_name))
-    db_product = models.Product(**product.dict())
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return db_product
+def create_product(db: Session, products: List[schemas.ProductCreate]):
+    new_products=[]
+    for product in products:
+        db_product_type = db.query(models.ProductType).filter(models.ProductType.name == product.product_type_name).first()
+        if db_product_type is None:
+            db_product_type = create_product_type(db=db, product_type=schemas.ProductTypeCreate(name=product.product_type_name))
+        add_category_to_product_type(
+            db=db,
+            product_type_name=db_product_type.name,
+            categories=[schemas.CategoryCreate(name=product.category_name)]
+        )
+        db_brand = db.query(models.Brand).filter(models.Brand.name == product.brand_name).first()
+        if db_brand is None:
+            create_brand(db=db, brand=schemas.BrandCreate(name=product.brand_name))
+        db_product = models.Product(**product.dict())
+        db.add(db_product)
+        db.commit()
+        db.refresh(db_product)
+        new_products.append(db_product)
+    return new_products
 
 
 
