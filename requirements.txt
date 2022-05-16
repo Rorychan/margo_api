@@ -1,1 +1,6 @@
-flask
+fastapi[all]
+sqlalchemy
+passlib
+python-jose
+bcrypt
+
