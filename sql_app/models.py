@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table, Float
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -43,9 +43,11 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     price = Column(String)
+    price_sign = Column(String)
+    image_link = Column(String)
     product_type_name = Column(String, ForeignKey("product_types.name"))
     brand_name = Column(String, ForeignKey("brands.name"))
     category_name = Column(String, ForeignKey("categories.name"))
@@ -86,7 +88,6 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(String, ForeignKey("users.id"))
-    content = Column(String)
     products = relationship("Product", secondary=order_product, backref="orders")
 
 
