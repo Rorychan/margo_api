@@ -1,6 +1,6 @@
 from typing import List, Union, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 #Token
@@ -15,7 +15,9 @@ class TokenData(BaseModel):
 # Product
 class ProductBase(BaseModel):
     name: str
-    price: str
+    price: Optional[str] = Field(default="Without Price")
+    price_sign: Optional[str] = Field(default="Without Price Sign")
+    image_link: str
     description: Optional[str] = ""
     product_type_name: str
     brand_name: str
