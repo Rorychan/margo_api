@@ -53,6 +53,15 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
+
+def delete_user(db: Session, user_id: int):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if db_user:
+        db.delete(db_user)
+        db.commit()
+        return f"User {user_id} was successfully deleted"
+    else:
+        return "User not found"
 # JWT
 
 

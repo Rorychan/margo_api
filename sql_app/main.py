@@ -1,6 +1,7 @@
 from typing import List, Union, Optional
 from datetime import datetime,timedelta
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from . import crud, models, schemas, auth
@@ -19,7 +20,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 180
 
 app = FastAPI()
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 oath2scheme = OAuth2PasswordBearer(tokenUrl="auth")
 
@@ -106,7 +113,13 @@ def create_user_order(products: schemas.OrderCreate, current_user: schemas.User 
         if db_product is None:
             raise HTTPException(status_code=400, detail=f"Product {product_id} not found")
     return crud.create_order(db=db, user_id=current_user.id, product_ids=products.product_ids)
-
+@app.delete("/users/{user_id}", tags=["Users"])
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    operation = crud.delete_user(user_id=user_id, db=db)
+    if operation is "User not found":
+        raise HTTPException(status_code=404, detail=operation)
+    else:
+        return {"detail": operation}
 
 
 
