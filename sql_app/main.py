@@ -18,7 +18,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 180
 
 
-app = FastAPI()
+app = FastAPI(title="MakeUpShopAPI", description="This API provides a set of endpoints for creating a simple makeup shop where people can select products by brand and type and make orders ")
 
 app.add_middleware(
     CORSMiddleware,
