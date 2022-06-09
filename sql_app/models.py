@@ -78,7 +78,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True)
     name = Column(String)
-    address = Column(String)
     hashed_password = Column(String)
     orders = relationship("Order")
 
@@ -88,6 +87,7 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(String, ForeignKey("users.id"))
+    address = Column(String)
     products = relationship("Product", secondary=order_product, backref="orders")
 
 
