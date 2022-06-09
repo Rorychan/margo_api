@@ -1,4 +1,5 @@
 import json
+import random
 
 products = []
 with open("./products.json") as f:
@@ -25,9 +26,9 @@ for product in products:
     product["category_name"] = product.pop("category")
     product["product_type_name"] = product.pop("product_type")
     if product["category_name"] == None:
-        product["category_name"] = "Without Category"
+        product["category_name"] = "without_category"
     if product["price"] == None or product["price"] == "":
-        product["price"] == "5.0"
+        product["price"] == str(random.uniform(0.5, 50))
     if product["price_sign"] == None or product["price_sign"]:
         product["price_sign"] = "$"
 

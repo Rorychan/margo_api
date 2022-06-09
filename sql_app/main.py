@@ -18,7 +18,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 180
 
 
-app = FastAPI()
+app = FastAPI(title="MakeUpShopAPI", description="This API provides a set of endpoints for creating a simple makeup shop where people can select products by brand and type and make orders ")
 
 app.add_middleware(
     CORSMiddleware,
@@ -112,7 +112,7 @@ def create_user_order(products: schemas.OrderCreate, current_user: schemas.User 
         db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
         if db_product is None:
             raise HTTPException(status_code=400, detail=f"Product {product_id} not found")
-    return crud.create_order(db=db, user_id=current_user.id, product_ids=products.product_ids)
+    return crud.create_order(db=db, user_id=current_user.id, product_ids=products.product_ids, address=products.address)
 @app.delete("/users/{user_id}", tags=["Users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     operation = crud.delete_user(user_id=user_id, db=db)
@@ -193,9 +193,11 @@ def read_product(
         brand_name: Optional[str] = None,
         product_type: Optional[str] = None,
         category: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 9,
         db: Session = Depends(get_db)
 ):
-    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type)
+    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type, skip=skip, limit=limit)
     if not db_products:
         raise HTTPException(status_code=404, detail="No products found on these criterias")
     return db_products

@@ -41,6 +41,7 @@ class OrderBase(BaseModel):
 
 class OrderCreate(OrderBase):
     product_ids: List[int]
+    address: str
 
 
 class OrderOut(OrderBase):
@@ -62,7 +63,6 @@ class Order(OrderBase):
 class UserBase(BaseModel):
     username: str
     name: str
-    address: Optional[str] = ""
 
 
 class UserCreate(UserBase):

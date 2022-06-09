@@ -8,8 +8,8 @@ from jose import jwt, JWTError
 
 
 # Order
-def create_order(db: Session, user_id: int, product_ids: List[int]):
-    db_order = models.Order(owner_id=user_id, products=[])
+def create_order(db: Session, user_id: int, product_ids: List[int], address: str):
+    db_order = models.Order(owner_id=user_id, products=[], address=address)
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
@@ -41,7 +41,7 @@ def register_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return schemas.User(name=db_user.name, username=db_user.username, address=db_user.address, id=db_user.id, orders=[])
+    return schemas.User(name=db_user.name, username=db_user.username, id=db_user.id, orders=[])
 
 
 
@@ -138,7 +138,9 @@ def get_products(
         db: Session,
         product_type: Optional[str] = None,
         category: Optional[str] = None,
-        brand_name: Optional[str] = None
+        brand_name: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 9
         ):
     print(brand_name)
     filters = []
@@ -152,7 +154,7 @@ def get_products(
         if brand_name:
             filters.append(f"brand_name='{brand_name}'")
         filters = ' AND '.join(filters)
-        db_products = db.query(models.Product).filter(text(filters)).all()
+        db_products = db.query(models.Product).filter(text(filters)).offset(skip).limit(limit).all()
     return db_products
 
 def get_product_by_id(db: Session, product_id: int):
