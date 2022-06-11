@@ -3,7 +3,7 @@ services:
   api:
     build: .
     ports:
-      - 5001:8000
+      - 8000:8000
 
 
 
