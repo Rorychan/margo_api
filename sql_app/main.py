@@ -91,6 +91,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
 
+
 @app.post("/users/register/", response_model=schemas.User, tags=["Users"])
 def create_user(user: schemas.UserCreate, db:Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
@@ -98,13 +99,16 @@ def create_user(user: schemas.UserCreate, db:Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="User already exists")
     return crud.register_user(db=db, user=user)
 
-@app.get("/users/me/orders/", response_model=List[schemas.Order], tags=["Users", "Orders"])
+
+@app.get("/users/me/orders/", response_model=List[schemas.OrderOut], tags=["Users", "Orders"])
 def read_user_orders(current_user: schemas.User = Depends(get_current_user)):
     return current_user.orders
+
 
 @app.get("/user/me/orders/{order_id}/", response_model=schemas.Order, tags=["Users", "Orders"])
 def read_user_order(order_id: int, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
     return crud.get_order(db=db, order_id=order_id)
+
 
 @app.post("/users/me/orders/", response_model=schemas.Order, tags=["Users", "Orders"])
 def create_user_order(products: schemas.OrderCreate, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -113,6 +117,8 @@ def create_user_order(products: schemas.OrderCreate, current_user: schemas.User 
         if db_product is None:
             raise HTTPException(status_code=400, detail=f"Product {product_id} not found")
     return crud.create_order(db=db, user_id=current_user.id, product_ids=products.product_ids, address=products.address)
+
+
 @app.delete("/users/{user_id}", tags=["Users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     operation = crud.delete_user(user_id=user_id, db=db)
@@ -120,7 +126,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=operation)
     else:
         return {"detail": operation}
-
 
 
 # Brand
@@ -141,6 +146,7 @@ def write_brand(brand: schemas.BrandCreate, db: Session = Depends(get_db)):
     if db_brand:
         raise HTTPException(status_code=400, detail="Brand already exists")
     return crud.create_brand(brand=brand, db=db)
+
 
 # Category
 @app.get("/categories/", response_model=List[schemas.Category], tags=["Categories"])
@@ -173,12 +179,14 @@ def read_product_types(db: Session = Depends(get_db)):
 def read_product_type(product_type_name: str, db: Session = Depends(get_db)):
     return crud.get_product_type_by_name(db=db, product_type_name=product_type_name)
 
+
 @app.post("/product_types/", response_model=schemas.ProductType, tags=["Product Types"])
 def write_product_type(product_type: schemas.ProductTypeCreate, db: Session = Depends(get_db)):
     db_product_type = crud.get_product_type_by_name(product_type_name=product_type.name, db=db)
     if db_product_type:
         raise HTTPException(status_code=400, detail="Product type already exists")
     return crud.create_product_type(product_type=product_type, db=db)
+
 
 @app.post("/product_types/{product_type_name}/categories", response_model=schemas.ProductType, tags=["Product Types"])
 def write_category_to_product_type(product_type_name: str, categories: List[schemas.CategoryCreate], db: Session = Depends(get_db)):

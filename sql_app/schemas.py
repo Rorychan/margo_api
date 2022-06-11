@@ -47,11 +47,12 @@ class OrderCreate(OrderBase):
 class OrderOut(OrderBase):
     id: int
     products: List[Product]
-
+    address: str
 
 class Order(OrderBase):
     id: int
     products: List[Product]
+
     owner_id: int
 
     class Config:
