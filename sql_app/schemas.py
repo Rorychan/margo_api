@@ -52,6 +52,7 @@ class OrderOut(OrderBase):
 class Order(OrderBase):
     id: int
     products: List[Product]
+    address: str
 
     owner_id: int
 
