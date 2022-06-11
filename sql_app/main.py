@@ -67,7 +67,7 @@ def get_current_user(token: str = Depends(oath2scheme), db: Session = Depends(ge
     user = crud.get_user(db=db, username=token_data.username)
     if user is None:
         raise credentials_exception
-    return schemas.User(name=user.name,username=user.username, address=user.address, id=user.id, orders=user.orders)
+    return schemas.User(name=user.name,username=user.username,  id=user.id, orders=user.orders)
 
 
 @app.post("/auth", response_model=schemas.Token, tags=["Auth"])
