@@ -205,11 +205,9 @@ def read_product(
         brand_name: Optional[str] = None,
         product_type: Optional[str] = None,
         category: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 9,
         db: Session = Depends(get_db)
 ):
-    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type, skip=skip, limit=limit)
+    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type)
     if not db_products:
         raise HTTPException(status_code=404, detail="No products found on these criterias")
     return db_products

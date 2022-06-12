@@ -139,8 +139,6 @@ def get_products(
         product_type: Optional[str] = None,
         category: Optional[str] = None,
         brand_name: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 9
         ):
     print(brand_name)
     filters = []
@@ -154,7 +152,7 @@ def get_products(
         if brand_name:
             filters.append(f"brand_name='{brand_name}'")
         filters = ' AND '.join(filters)
-        db_products = db.query(models.Product).filter(text(filters)).offset(skip).limit(limit).all()
+        db_products = db.query(models.Product).filter(text(filters)).all()
     return db_products
 
 def get_product_by_id(db: Session, product_id: int):
