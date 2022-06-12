@@ -1,3 +1,5 @@
+import math
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
@@ -139,13 +141,18 @@ def get_products(
         product_type: Optional[str] = None,
         category: Optional[str] = None,
         brand_name: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 9
+        page: Optional[int] = None
         ):
-    print(brand_name)
     filters = []
     if product_type is None and category is None and brand_name is None:
-        db_products = db.query(models.Product).all()
+        if page is not None:
+            print(f"reauested page {page}")
+            pages_count = db.query(models.Product).count()
+            db_products = db.query(models.Product).offset((page-1) * 9).limit(9).all()
+            db_products = schemas.ProductOut(products=db_products, page=page, pages_count=math.ceil(pages_count/9))
+        else:
+            db_products = db.query(models.Product).all()
+            db_products = schemas.ProductOut(products=db_products, page=None, pages_count=None)
     else:
         if product_type:
             filters.append(f"product_type_name='{product_type}'")
@@ -154,7 +161,17 @@ def get_products(
         if brand_name:
             filters.append(f"brand_name='{brand_name}'")
         filters = ' AND '.join(filters)
-        db_products = db.query(models.Product).filter(text(filters)).offset(skip).limit(limit).all()
+        print(page)
+        if page is not None:
+            print(f"reauested page {page}")
+            pages_count = db.query(models.Product).filter(text(filters)).count()
+            db_products = db.query(models.Product).filter(text(filters)).offset((page-1)*9).limit(9).all()
+            db_products = schemas.ProductOut(products=db_products, page=page, pages_count=math.ceil(pages_count/9))
+        else:
+            db_products = db.query(models.Product).filter(text(filters)).all()
+            db_products = schemas.ProductOut(products=db_products, page=None, pages_count=None)
+
+
     return db_products
 
 def get_product_by_id(db: Session, product_id: int):

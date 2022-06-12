@@ -34,7 +34,10 @@ class Product(ProductBase):
     class Config:
         orm_mode = True
 
-
+class ProductOut(BaseModel):
+    products: List[Product]
+    pages_count: Optional[int] = None
+    page: Optional[int] = None
 # Order
 class OrderBase(BaseModel):
     pass

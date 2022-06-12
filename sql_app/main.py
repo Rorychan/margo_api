@@ -200,16 +200,15 @@ def write_category_to_product_type(product_type_name: str, categories: List[sche
     return crud.add_category_to_product_type(product_type_name=product_type_name, categories=categories,db=db)
 
 # Products
-@app.get("/products",response_model=List[schemas.Product], tags=["Products"])
+@app.get("/products",response_model=schemas.ProductOut, tags=["Products"])
 def read_product(
         brand_name: Optional[str] = None,
         product_type: Optional[str] = None,
         category: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 9,
+        page: Optional[int] = None,
         db: Session = Depends(get_db)
 ):
-    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type, skip=skip, limit=limit)
+    db_products = crud.get_products(db=db, brand_name=brand_name, category=category, product_type=product_type, page=page)
     if not db_products:
         raise HTTPException(status_code=404, detail="No products found on these criterias")
     return db_products
