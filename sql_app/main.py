@@ -72,6 +72,8 @@ def get_current_user(token: str = Depends(oath2scheme), db: Session = Depends(ge
 
 @app.post("/auth", response_model=schemas.Token, tags=["Auth"])
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    if not form_data.username and not form_data.password:
+        raise HTTPException(status_code=400, detail="Login fields cannot be empty")
     user = crud.authenticate_user(username=form_data.username, password=form_data.password, db=db)
     if not user:
         raise HTTPException(
