@@ -94,6 +94,8 @@ def read_users_me(current_user: schemas.User = Depends(get_current_user)):
 
 @app.post("/users/register/", response_model=schemas.User, tags=["Users"])
 def create_user(user: schemas.UserCreate, db:Session = Depends(get_db)):
+    if not user.name or not user.username or not user.password:
+        raise HTTPException(status_code=400, detail="Registration fields cannot be empty")
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="User already exists")
