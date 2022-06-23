@@ -126,7 +126,7 @@ def create_user_order(products: schemas.OrderCreate, current_user: schemas.User 
 @app.delete("/users/{user_id}", tags=["Users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     operation = crud.delete_user(user_id=user_id, db=db)
-    if operation is "User not found":
+    if operation == "User not found":
         raise HTTPException(status_code=404, detail=operation)
     else:
         return {"detail": operation}
